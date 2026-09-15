@@ -1,0 +1,208 @@
+# Enumeration-only command map.
+# Placeholders: {ip} {host} {url} {port} {proto} {wordlist_dirs} {wordlist_files} {wordlist_users}
+# Missing binaries are skipped, not treated as failures.
+
+wordlists:
+  dirs:
+    - /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt
+    - /usr/share/SecLists/Discovery/Web-Content/raft-medium-directories.txt
+    - /opt/SecLists/Discovery/Web-Content/raft-medium-directories.txt
+    - /usr/share/wordlists/dirb/common.txt
+  files:
+    - /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt
+    - /usr/share/SecLists/Discovery/Web-Content/raft-medium-files.txt
+    - /opt/SecLists/Discovery/Web-Content/raft-medium-files.txt
+  users:
+    - /usr/share/seclists/Usernames/top-usernames-shortlist.txt
+    - /usr/share/SecLists/Usernames/top-usernames-shortlist.txt
+    - /opt/SecLists/Usernames/top-usernames-shortlist.txt
+
+# Heading text from templates/ports/*.md -> command ids
+heading_map:
+  nmap: [service_nmap]
+  curl: [curl_headers]
+  nikto: [nikto]
+  whatweb: [whatweb]
+  gobuster: [gobuster_dirs, gobuster_files]
+  enum4linux: [enum4linux]
+  enum4linux-ng: [enum4linux_ng]
+  nbtscan: [nbtscan]
+  smbclient: [smbclient_list]
+  snmp-walk: [snmpwalk_v2c, snmpwalk_v1]
+  reverse-lookup: [host_reverse, dnsrecon]
+  dns-zone-transfer: [dns_axfr]
+  expn user-enum: [smtp_expn]
+  vrfy user-enum: [smtp_vrfy]
+  ssh-audit: [ssh_audit]
+  screenshot: []
+
+# Fallback when a port has no matching template headings
+service_defaults:
+  http: [curl_headers, whatweb, nikto, gobuster_dirs, gobuster_files]
+  ssl/http: [curl_headers, whatweb, nikto, gobuster_dirs, gobuster_files]
+  https: [curl_headers, whatweb, nikto, gobuster_dirs, gobuster_files]
+  ftp: [ftp_anon]
+  ssh: [ssh_audit]
+  microsoft-ds: [enum4linux_ng, enum4linux, smbclient_list, nxc_smb, smb_nmap_enum]
+  netbios-ssn: [enum4linux_ng, enum4linux, nbtscan, smbclient_list]
+  ms-wbt-server: [rdp_nmap]
+  ldap: [ldap_nmap, ldapsearch_anon]
+  ssl/ldap: [ldap_nmap]
+  kerberos-sec: [kerberos_nmap]
+  domain: [host_reverse, dnsrecon, dns_axfr]
+  smtp: [smtp_vrfy, smtp_expn]
+  snmp: [snmpwalk_v2c, snmpwalk_v1, onesixtyone]
+  mysql: [mysql_nmap]
+  ms-sql-s: [mssql_nmap]
+  pop3: []
+  imap: []
+  http-rpc-epmap: [rpc_nmap]
+  msrpc: [rpc_nmap]
+  winrm: []
+  unknown: []
+
+commands:
+  service_nmap:
+    bin: nmap
+    title: NMAP
+    cmd: "nmap -sV -sC -p {port} --open -oN scans/{port}-{proto}-nmap.txt {ip}"
+
+  curl_headers:
+    bin: curl
+    title: CURL
+    cmd: "curl -skI {url} --max-time 15"
+
+  whatweb:
+    bin: whatweb
+    title: Whatweb
+    cmd: "whatweb -a 3 {url}"
+
+  nikto:
+    bin: nikto
+    title: Nikto
+    cmd: "nikto -host {url} -maxtime 5m"
+
+  gobuster_dirs:
+    bin: gobuster
+    title: Gobuster directories
+    cmd: "gobuster dir -u {url} -w {wordlist_dirs} -k -t 30 -q -o scans/{port}-gobuster-dirs.txt"
+
+  gobuster_files:
+    bin: gobuster
+    title: Gobuster files
+    cmd: "gobuster dir -u {url} -w {wordlist_files} -k -t 30 -q -o scans/{port}-gobuster-files.txt"
+
+  enum4linux:
+    bin: enum4linux
+    title: Enum4linux
+    cmd: "enum4linux -a {ip}"
+
+  enum4linux_ng:
+    bin: enum4linux-ng
+    title: Enum4linux-ng
+    cmd: "enum4linux-ng -A {ip}"
+
+  nbtscan:
+    bin: nbtscan
+    title: nbtscan
+    cmd: "nbtscan {ip}"
+
+  smbclient_list:
+    bin: smbclient
+    title: smbclient
+    cmd: "smbclient -L //{ip}/ -N"
+
+  nxc_smb:
+    bin: nxc
+    title: Netexec SMB
+    cmd: "nxc smb {ip} --shares"
+
+  smb_nmap_enum:
+    bin: nmap
+    title: NMAP SMB enum
+    cmd: "nmap -p 139,445 --script smb-enum-shares,smb-enum-users,smb-os-discovery --open -oN scans/{port}-smb-enum.txt {ip}"
+
+  ftp_anon:
+    bin: nmap
+    title: FTP anonymous
+    cmd: "nmap -p {port} --script ftp-anon,ftp-syst --open -oN scans/{port}-ftp-anon.txt {ip}"
+
+  ssh_audit:
+    bin: ssh-audit
+    title: SSH-AUDIT
+    cmd: "ssh-audit {ip}"
+
+  snmpwalk_v2c:
+    bin: snmpwalk
+    title: SNMP-WALK v2c
+    cmd: "snmpwalk -c public -v2c -t 5 {ip}"
+
+  snmpwalk_v1:
+    bin: snmpwalk
+    title: SNMP-WALK v1
+    cmd: "snmpwalk -c public -v1 -t 5 {ip}"
+
+  onesixtyone:
+    bin: onesixtyone
+    title: onesixtyone
+    cmd: "onesixtyone {ip} public private"
+
+  host_reverse:
+    bin: host
+    title: Reverse-lookup
+    cmd: "host {ip}"
+
+  dnsrecon:
+    bin: dnsrecon
+    title: dnsrecon
+    cmd: "dnsrecon -d {host} -n {ip}"
+
+  dns_axfr:
+    bin: dig
+    title: DNS-Zone-Transfer
+    cmd: "dig axfr @{ip} {host}"
+
+  smtp_vrfy:
+    bin: smtp-user-enum
+    title: VRFY user-enum
+    cmd: "smtp-user-enum -M VRFY -U {wordlist_users} -t {ip} -p {port}"
+
+  smtp_expn:
+    bin: smtp-user-enum
+    title: expn user-enum
+    cmd: "smtp-user-enum -M EXPN -U {wordlist_users} -t {ip} -p {port}"
+
+  ldap_nmap:
+    bin: nmap
+    title: NMAP LDAP
+    cmd: "nmap -p {port} --script \"ldap* and not brute\" -Pn -sT --open -oN scans/{port}-ldap.txt {ip}"
+
+  ldapsearch_anon:
+    bin: ldapsearch
+    title: ldapsearch anonymous
+    cmd: "ldapsearch -x -H ldap://{ip} -s base namingContexts"
+
+  kerberos_nmap:
+    bin: nmap
+    title: NMAP Kerberos
+    cmd: "nmap -p {port} --script krb5-enum-users --open -oN scans/{port}-kerberos.txt {ip}"
+
+  mysql_nmap:
+    bin: nmap
+    title: NMAP MySQL
+    cmd: "nmap -p {port} --script mysql-info,mysql-enum,mysql-empty-password --open -oN scans/{port}-mysql.txt {ip}"
+
+  mssql_nmap:
+    bin: nmap
+    title: NMAP MSSQL
+    cmd: "nmap -p {port} --script ms-sql-info,ms-sql-ntlm-info --open -oN scans/{port}-mssql.txt {ip}"
+
+  rdp_nmap:
+    bin: nmap
+    title: NMAP RDP
+    cmd: "nmap -p {port} --script rdp-enum-encryption,rdp-ntlm-info --open -oN scans/{port}-rdp.txt {ip}"
+
+  rpc_nmap:
+    bin: nmap
+    title: NMAP RPC
+    cmd: "nmap -p {port} --script rpcinfo,rpc-grind --open -oN scans/{port}-rpc.txt {ip}"
