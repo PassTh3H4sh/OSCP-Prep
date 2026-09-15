@@ -4,11 +4,10 @@ Command snippets I used while practicing.
 
 Lab IPs in text are `TARGET` / `ATTACKER`.
 
-**Auto enum:** [oscp-scan](oscp-scan/) runs the nmap + per-port one-liners into a new `boxes/<name>/` folder. Enumeration only.
+**Auto enum:** private repo [PassTh3H4sh/oscp-scan](https://github.com/PassTh3H4sh/oscp-scan) (not in this vault).
 
 | Tool |
 | --- |
-| [oscp-scan](oscp-scan/) |
 | [7z](7z.md) |
 | [AS-REP-Roasting](AS-REP-Roasting.md) |
 | [Bloodhound](Bloodhound.md) |
